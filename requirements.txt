@@ -1,0 +1,11 @@
+# ── Core (always needed) — lightweight, ~50 MB total ──
+flask
+flask-login
+flask-bcrypt
+python-dotenv
+requests
+Pillow
+opencv-python-headless
+numpy
+onnxruntime
+huggingface_hub
