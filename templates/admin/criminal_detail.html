@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Criminal Detail — Forensic AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+body{background:#f4f6fb;}
+.navbar{background:linear-gradient(90deg,#b30000,#ff2a2a);display:flex;justify-content:space-between;align-items:center;padding:18px 70px;box-shadow:0 6px 20px rgba(0,0,0,0.25);}
+.logo{background:#1f3a3d;padding:18px 35px;border-radius:0 0 40px 40px;color:white;font-weight:600;font-size:18px;}
+.profile{color:white;font-size:15px;}
+.wrapper{display:flex;}
+.sidebar{width:240px;min-height:100vh;background:linear-gradient(180deg,#8b0000,#d10000);padding-top:40px;box-shadow:5px 0 20px rgba(0,0,0,0.3);}
+.sidebar a{display:flex;align-items:center;gap:12px;margin:8px 16px;padding:13px 16px;border-radius:12px;text-decoration:none;color:white;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);transition:0.35s;font-size:14px;}
+.sidebar a i{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.15);border-radius:8px;}
+.sidebar a:hover,.sidebar a.active{background:white;color:#b30000;transform:translateX(5px);}
+.sidebar a.active i{background:#b30000;color:white;}
+.content{flex:1;padding:40px 55px;}
+.back-link{color:#b30000;text-decoration:none;font-size:14px;font-weight:600;display:inline-flex;align-items:center;gap:6px;margin-bottom:20px;}
+.detail-card{background:white;border-radius:18px;padding:32px;border:2px solid #eee;box-shadow:0 8px 22px rgba(0,0,0,0.07);display:grid;grid-template-columns:200px 1fr;gap:32px;}
+.photo-section{text-align:center;}
+.suspect-photo{width:180px;height:180px;border-radius:16px;object-fit:cover;border:3px solid #b30000;}
+.photo-placeholder{width:180px;height:180px;border-radius:16px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:60px;color:#ccc;border:3px solid #eee;}
+.status-badge{display:inline-block;padding:5px 14px;border-radius:20px;font-size:13px;font-weight:700;margin-top:12px;}
+.status-wanted{background:#fff0f0;color:#b30000;}
+.status-arrested{background:#e6f7ff;color:#0050b3;}
+.status-released{background:#e6f7ea;color:#0a7a1e;}
+.status-deceased{background:#f5f5f5;color:#666;}
+.info-section h2{font-size:24px;font-weight:700;color:#1a1a2e;margin-bottom:4px;}
+.criminal-code{font-size:13px;color:#b30000;font-weight:700;margin-bottom:20px;font-family:monospace;}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.info-item{background:#f9f9f9;border-radius:10px;padding:12px 16px;}
+.info-label{font-size:11px;font-weight:700;color:#b30000;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;}
+.info-value{font-size:14px;color:#1a1a2e;}
+.marks-box{margin-top:18px;background:#fff8f8;border:1px solid #f5c6c6;border-radius:12px;padding:16px;}
+.marks-box h4{font-size:13px;font-weight:700;color:#b30000;margin-bottom:10px;}
+.mark-tag{display:inline-block;background:#fff0f0;border:1px solid #f5c6c6;color:#b30000;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;margin:3px;}
+.desc-box{margin-top:18px;background:#f9f9f9;border-radius:12px;padding:16px;font-size:14px;color:#333;line-height:1.7;}
+.footer{background:#111;color:white;text-align:center;padding:10px;font-size:13px;margin-top:40px;}
+</style>
+</head>
+<body>
+<div class="navbar">
+  <div class="logo">🕵️ Forensic AI</div>
+  <div class="profile"><i class="fa-solid fa-user-shield"></i> {{ current_user.full_name }}</div>
+</div>
+<div class="wrapper">
+  <div class="sidebar">
+    <a href="{{ url_for('admin_dashboard') }}"><i class="fa-solid fa-chart-line"></i>Dashboard</a>
+    <a href="{{ url_for('admin_criminals') }}" class="active"><i class="fa-solid fa-database"></i>Criminal Database</a>
+    <a href="{{ url_for('admin_add_criminal') }}"><i class="fa-solid fa-plus"></i>Add Criminal</a>
+    <a href="{{ url_for('admin_police') }}"><i class="fa-solid fa-building"></i>Police Officers</a>
+    <a href="{{ url_for('admin_add_police') }}"><i class="fa-solid fa-user-shield"></i>Add Police</a>
+    <a href="{{ url_for('logout') }}"><i class="fa-solid fa-right-from-bracket"></i>Logout</a>
+  </div>
+  <div class="content">
+    <a href="{{ url_for('admin_criminals') }}" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Database</a>
+
+    <div class="detail-card">
+      <div class="photo-section">
+        {% if criminal.face_image_path %}
+          <img class="suspect-photo" src="{{ url_for('serve_criminal', filename=criminal.face_image_path) }}" alt="{{ criminal.name }}">
+        {% else %}
+          <div class="photo-placeholder"><i class="fa-solid fa-user"></i></div>
+        {% endif %}
+        <div>
+          <span class="status-badge status-{{ criminal.status or 'wanted' }}">
+            {{ (criminal.status or 'wanted')|upper }}
+          </span>
+        </div>
+        <div style="font-size:12px;color:#aaa;margin-top:10px;">Added {{ criminal.added_at[:10] if criminal.added_at else '' }}</div>
+      </div>
+
+      <div class="info-section">
+        <h2>{{ criminal.name }}</h2>
+        <div class="criminal-code">{{ criminal.criminal_code or 'No Code' }}</div>
+
+        <div class="info-grid">
+          {% if criminal.age %}<div class="info-item"><div class="info-label">Age</div><div class="info-value">{{ criminal.age }}</div></div>{% endif %}
+          {% if criminal.gender %}<div class="info-item"><div class="info-label">Gender</div><div class="info-value">{{ criminal.gender|title }}</div></div>{% endif %}
+          {% if criminal.skin_tone %}<div class="info-item"><div class="info-label">Skin Tone</div><div class="info-value">{{ criminal.skin_tone }}</div></div>{% endif %}
+          {% if criminal.crime_type %}<div class="info-item"><div class="info-label">Crime Type</div><div class="info-value">{{ criminal.crime_type }}</div></div>{% endif %}
+          {% if criminal.crime_year %}<div class="info-item"><div class="info-label">Crime Year</div><div class="info-value">{{ criminal.crime_year }}</div></div>{% endif %}
+          {% if criminal.no_of_crimes %}<div class="info-item"><div class="info-label">No. of Crimes</div><div class="info-value">{{ criminal.no_of_crimes }}</div></div>{% endif %}
+          {% if criminal.last_known_location %}<div class="info-item"><div class="info-label">Last Known Location</div><div class="info-value">{{ criminal.last_known_location }}</div></div>{% endif %}
+        </div>
+
+        {% if criminal.attributes_json %}
+          {% set attrs = criminal.attributes_json | tojson | safe %}
+          {% set parsed = criminal.attributes_json %}
+          <div class="marks-box">
+            <h4><i class="fa-solid fa-star-of-life"></i> Distinguishing Marks</h4>
+            <div id="marksDisplay">Loading...</div>
+          </div>
+        {% endif %}
+
+        {% if criminal.description %}
+          <div class="desc-box"><strong>Description:</strong><br>{{ criminal.description }}</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+<div class="footer">Forensic AI Investigation System</div>
+<script>
+// Parse and display marks from JSON
+try {
+  var attrs = {{ criminal.attributes_json | safe }};
+  var marks = attrs.marks || [];
+  var el = document.getElementById('marksDisplay');
+  if (marks.length === 0) {
+    el.innerHTML = '<span style="color:#aaa;font-size:13px;">No distinguishing marks recorded.</span>';
+  } else {
+    el.innerHTML = marks.map(function(m) {
+      return '<span class="mark-tag">' + m.type + ' — ' + m.location + '</span>';
+    }).join('');
+  }
+} catch(e) {}
+</script>
+</body>
+</html>

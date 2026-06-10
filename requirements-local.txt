@@ -1,0 +1,9 @@
+# ── Local generation mode only (~2.5 GB) ──
+# Only needed when GENERATION_MODE=local in .env
+# API mode (FLUX via HuggingFace) does NOT need these.
+torch
+diffusers
+transformers
+accelerate
+safetensors
+peft

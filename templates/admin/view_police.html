@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Police Officers — Forensic AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+body{background:#f4f6fb;}
+.navbar{background:linear-gradient(90deg,#b30000,#ff2a2a);display:flex;justify-content:space-between;align-items:center;padding:18px 70px;box-shadow:0 6px 20px rgba(0,0,0,0.25);}
+.logo{background:#1f3a3d;padding:18px 35px;border-radius:0 0 40px 40px;color:white;font-weight:600;font-size:18px;}
+.profile{color:white;font-size:15px;}
+.wrapper{display:flex;}
+.sidebar{width:240px;min-height:100vh;background:linear-gradient(180deg,#8b0000,#d10000);padding-top:40px;box-shadow:5px 0 20px rgba(0,0,0,0.3);}
+.sidebar a{display:flex;align-items:center;gap:12px;margin:8px 16px;padding:13px 16px;border-radius:12px;text-decoration:none;color:white;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);transition:0.35s;font-size:14px;}
+.sidebar a i{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.15);border-radius:8px;}
+.sidebar a:hover,.sidebar a.active{background:white;color:#b30000;transform:translateX(5px);}
+.sidebar a.active i{background:#b30000;color:white;}
+.content{flex:1;padding:40px 55px;}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
+.page-title{font-size:26px;font-weight:700;color:#1a1a2e;}
+.add-btn{background:#b30000;color:white;padding:10px 22px;border-radius:10px;text-decoration:none;font-size:14px;font-weight:600;transition:0.3s;}
+.add-btn:hover{background:#ff3c3c;}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:22px;}
+.officer-card{background:white;border-radius:16px;padding:24px;border:2px solid #eee;box-shadow:0 6px 18px rgba(0,0,0,0.07);transition:0.35s;}
+.officer-card:hover{border-color:#b30000;box-shadow:0 12px 28px rgba(0,0,0,0.12);}
+.officer-avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#b30000,#ff5555);display:flex;align-items:center;justify-content:center;font-size:22px;color:white;margin-bottom:14px;}
+.officer-name{font-size:16px;font-weight:700;color:#1a1a2e;margin-bottom:4px;}
+.officer-id{font-size:12px;color:#b30000;font-weight:600;margin-bottom:12px;}
+.officer-info{font-size:13px;color:#666;line-height:1.8;}
+.officer-info i{color:#b30000;margin-right:6px;width:14px;}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;margin-top:12px;}
+.badge-active{background:#e6f7ea;color:#0a7a1e;}
+.badge-inactive{background:#fff0f0;color:#b30000;}
+.toggle-form{margin-top:12px;}
+.toggle-btn{border:none;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:0.3s;}
+.toggle-btn-deactivate{background:#fff0f0;color:#b30000;border:1px solid #f5c6c6;}
+.toggle-btn-activate{background:#e6f7ea;color:#0a7a1e;border:1px solid #b7eb8f;}
+.empty-state{text-align:center;padding:60px;color:#888;}
+.empty-state i{font-size:50px;margin-bottom:16px;color:#ddd;display:block;}
+.footer{background:#111;color:white;text-align:center;padding:10px;font-size:13px;margin-top:40px;}
+</style>
+</head>
+<body>
+<div class="navbar">
+  <div class="logo">🕵️ Forensic AI</div>
+  <div class="profile"><i class="fa-solid fa-user-shield"></i> {{ current_user.full_name }}</div>
+</div>
+<div class="wrapper">
+  <div class="sidebar">
+    <a href="{{ url_for('admin_dashboard') }}"><i class="fa-solid fa-chart-line"></i>Dashboard</a>
+    <a href="{{ url_for('admin_criminals') }}"><i class="fa-solid fa-database"></i>Criminal Database</a>
+    <a href="{{ url_for('admin_add_criminal') }}"><i class="fa-solid fa-plus"></i>Add Criminal</a>
+    <a href="{{ url_for('admin_police') }}" class="active"><i class="fa-solid fa-building"></i>Police Officers</a>
+    <a href="{{ url_for('admin_add_police') }}"><i class="fa-solid fa-user-shield"></i>Add Police</a>
+    <a href="{{ url_for('logout') }}"><i class="fa-solid fa-right-from-bracket"></i>Logout</a>
+  </div>
+  <div class="content">
+    <div class="page-header">
+      <h1 class="page-title">Police Officers ({{ officers|length }})</h1>
+      <a href="{{ url_for('admin_add_police') }}" class="add-btn"><i class="fa-solid fa-plus"></i> Add Officer</a>
+    </div>
+
+    {% if officers %}
+    <div class="cards-grid">
+      {% for o in officers %}
+      <div class="officer-card">
+        <div class="officer-avatar"><i class="fa-solid fa-user-shield"></i></div>
+        <div class="officer-name">{{ o.full_name }}</div>
+        <div class="officer-id">{{ o.police_id or 'No Badge ID' }}</div>
+        <div class="officer-info">
+          <div><i class="fa-solid fa-user"></i>{{ o.username }}</div>
+          {% if o.rank %}<div><i class="fa-solid fa-star"></i>{{ o.rank }}</div>{% endif %}
+          {% if o.station_name %}<div><i class="fa-solid fa-building"></i>{{ o.station_name }}</div>{% endif %}
+          {% if o.location %}<div><i class="fa-solid fa-location-dot"></i>{{ o.location }}</div>{% endif %}
+          {% if o.email %}<div><i class="fa-solid fa-envelope"></i>{{ o.email }}</div>{% endif %}
+          {% if o.last_login %}<div><i class="fa-solid fa-clock"></i>Last: {{ o.last_login[:16] }}</div>{% endif %}
+        </div>
+        <span class="badge {% if o.is_active %}badge-active{% else %}badge-inactive{% endif %}">
+          {{ 'Active' if o.is_active else 'Inactive' }}
+        </span>
+        <form class="toggle-form" method="POST" action="{{ url_for('admin_toggle_police', uid=o.id) }}">
+          <button type="submit" class="toggle-btn {% if o.is_active %}toggle-btn-deactivate{% else %}toggle-btn-activate{% endif %}">
+            {{ 'Deactivate' if o.is_active else 'Activate' }}
+          </button>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <i class="fa-solid fa-user-slash"></i>
+      <p>No police officers registered yet.</p>
+      <a href="{{ url_for('admin_add_police') }}" style="color:#b30000;text-decoration:none;font-weight:600;">Add the first officer →</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+<div class="footer">Forensic AI Investigation System</div>
+</body>
+</html>

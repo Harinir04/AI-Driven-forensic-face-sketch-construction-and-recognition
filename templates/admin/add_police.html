@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add Police Officer — Forensic AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+body{background:#f4f6fb;}
+.navbar{background:linear-gradient(90deg,#b30000,#ff2a2a);display:flex;justify-content:space-between;align-items:center;padding:18px 70px;box-shadow:0 6px 20px rgba(0,0,0,0.25);}
+.logo{background:#1f3a3d;padding:18px 35px;border-radius:0 0 40px 40px;color:white;font-weight:600;font-size:18px;}
+.profile{color:white;font-size:15px;}
+.wrapper{display:flex;}
+.sidebar{width:240px;min-height:100vh;background:linear-gradient(180deg,#8b0000,#d10000);padding-top:40px;box-shadow:5px 0 20px rgba(0,0,0,0.3);}
+.sidebar a{display:flex;align-items:center;gap:12px;margin:8px 16px;padding:13px 16px;border-radius:12px;text-decoration:none;color:white;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);transition:0.35s;font-size:14px;}
+.sidebar a i{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.15);border-radius:8px;}
+.sidebar a:hover,.sidebar a.active{background:white;color:#b30000;transform:translateX(5px);}
+.sidebar a.active i{background:#b30000;color:white;}
+.content{flex:1;padding:50px 60px;display:flex;flex-direction:column;align-items:center;}
+.page-title{font-size:28px;font-weight:700;margin-bottom:30px;text-align:center;}
+.form-box{max-width:520px;width:100%;background:white;border-radius:18px;padding:35px;border:2px solid #e6e6e6;box-shadow:0 10px 25px rgba(0,0,0,0.08);}
+.form-box h2{margin-bottom:22px;color:#1a1a2e;font-size:18px;}
+.input-group{display:flex;align-items:center;border:1px solid #ccc;border-radius:10px;margin-bottom:14px;overflow:hidden;transition:0.3s;}
+.input-group:focus-within{border-color:#b30000;box-shadow:0 0 0 3px rgba(179,0,0,0.08);}
+.input-group i{background:#f8f8f8;padding:13px 14px;color:#b30000;font-size:14px;border-right:1px solid #eee;}
+.input-group input,.input-group select{border:none;outline:none;padding:13px;width:100%;font-size:14px;font-family:'Poppins',sans-serif;}
+.alert{padding:10px 14px;border-radius:8px;margin-bottom:16px;font-size:13px;}
+.alert-danger{background:#fff0f0;border:1px solid #f5c6c6;color:#b30000;}
+.alert-success{background:#f0fff4;border:1px solid #b7eb8f;color:#135200;}
+.form-box button{width:100%;padding:13px;border:none;border-radius:30px;background:linear-gradient(45deg,#b30000,#ff3030);color:white;font-weight:600;font-size:15px;cursor:pointer;transition:0.3s;}
+.form-box button:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,0.2);}
+.footer{background:#111;color:white;text-align:center;padding:10px;font-size:13px;margin-top:40px;}
+</style>
+</head>
+<body>
+<div class="navbar">
+  <div class="logo">🕵️ Forensic AI</div>
+  <div class="profile"><i class="fa-solid fa-user-shield"></i> {{ current_user.full_name }}</div>
+</div>
+<div class="wrapper">
+  <div class="sidebar">
+    <a href="{{ url_for('admin_dashboard') }}"><i class="fa-solid fa-chart-line"></i>Dashboard</a>
+    <a href="{{ url_for('admin_criminals') }}"><i class="fa-solid fa-database"></i>Criminal Database</a>
+    <a href="{{ url_for('admin_add_criminal') }}"><i class="fa-solid fa-plus"></i>Add Criminal</a>
+    <a href="{{ url_for('admin_police') }}"><i class="fa-solid fa-building"></i>Police Officers</a>
+    <a href="{{ url_for('admin_add_police') }}" class="active"><i class="fa-solid fa-user-shield"></i>Add Police</a>
+    <a href="{{ url_for('logout') }}"><i class="fa-solid fa-right-from-bracket"></i>Logout</a>
+  </div>
+  <div class="content">
+    <h1 class="page-title">Add Police Officer</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}<div class="alert alert-{{ cat }}" style="max-width:520px;width:100%;">{{ msg }}</div>{% endfor %}
+    {% endwith %}
+    <div class="form-box">
+      <h2>Officer Registration</h2>
+      <form method="POST" action="{{ url_for('admin_add_police') }}">
+        <div class="input-group"><i class="fa-solid fa-user"></i><input name="name" placeholder="Full Name" required></div>
+        <div class="input-group"><i class="fa-solid fa-envelope"></i><input type="email" name="email" placeholder="Email Address"></div>
+        <div class="input-group"><i class="fa-solid fa-phone"></i><input name="mobile" placeholder="Mobile Number"></div>
+        <div class="input-group"><i class="fa-solid fa-id-badge"></i><input name="police_id" placeholder="Badge / Police ID" required></div>
+        <div class="input-group"><i class="fa-solid fa-star"></i><input name="rank" placeholder="Rank (e.g. Inspector)"></div>
+        <div class="input-group"><i class="fa-solid fa-building"></i><input name="station" placeholder="Station Name" required></div>
+        <div class="input-group"><i class="fa-solid fa-location-dot"></i><input name="location" placeholder="Station Location" required></div>
+        <div class="input-group"><i class="fa-solid fa-user-lock"></i><input name="username" placeholder="Login Username" required></div>
+        <div class="input-group"><i class="fa-solid fa-key"></i><input type="password" name="password" placeholder="Temporary Password (min 8 chars)" required minlength="8"></div>
+        <button type="submit"><i class="fa-solid fa-user-plus"></i> Add Officer</button>
+      </form>
+    </div>
+  </div>
+</div>
+<div class="footer">Forensic AI Investigation System</div>
+</body>
+</html>

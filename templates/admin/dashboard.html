@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard — Forensic AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+body{background:#f4f6fb;}
+.navbar{background:linear-gradient(90deg,#b30000,#ff2a2a);display:flex;justify-content:space-between;align-items:center;padding:18px 70px;box-shadow:0 6px 20px rgba(0,0,0,0.25);}
+.logo{background:#1f3a3d;padding:18px 35px;border-radius:0 0 40px 40px;color:white;font-weight:600;font-size:18px;}
+.profile{color:white;font-size:15px;display:flex;align-items:center;gap:10px;}
+.wrapper{display:flex;}
+.sidebar{width:240px;min-height:100vh;background:linear-gradient(180deg,#8b0000,#d10000);padding-top:40px;box-shadow:5px 0 20px rgba(0,0,0,0.3);}
+.sidebar a{display:flex;align-items:center;gap:12px;margin:8px 16px;padding:13px 16px;border-radius:12px;text-decoration:none;color:white;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);transition:0.35s;font-size:14px;}
+.sidebar a i{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.15);border-radius:8px;}
+.sidebar a:hover,.sidebar a.active{background:white;color:#b30000;transform:translateX(5px);}
+.sidebar a.active i{background:#b30000;color:white;}
+.content{flex:1;padding:40px 55px;}
+.page-title{font-size:28px;font-weight:700;margin-bottom:30px;color:#1a1a2e;}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:22px;margin-bottom:40px;}
+.stat-card{background:white;padding:28px;border-radius:16px;border-left:5px solid #b30000;box-shadow:0 6px 18px rgba(0,0,0,0.07);display:flex;align-items:center;gap:18px;transition:0.3s;}
+.stat-card:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(0,0,0,0.12);}
+.stat-icon{width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,#b30000,#ff3c3c);display:flex;align-items:center;justify-content:center;font-size:22px;color:white;flex-shrink:0;}
+.stat-info h3{font-size:28px;font-weight:700;color:#1a1a2e;}
+.stat-info p{font-size:13px;color:#888;margin-top:2px;}
+.action-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:22px;}
+.action-card{background:white;padding:30px;border-radius:16px;border:2px solid #eee;text-align:center;text-decoration:none;color:inherit;transition:0.35s;display:block;}
+.action-card:hover{transform:translateY(-6px);border-color:#b30000;box-shadow:0 14px 32px rgba(0,0,0,0.12);}
+.action-card i{font-size:36px;color:#b30000;margin-bottom:14px;display:block;}
+.action-card h4{color:#1a1a2e;margin-bottom:8px;}
+.action-card p{font-size:13px;color:#777;line-height:1.5;}
+.footer{background:#111;color:white;text-align:center;padding:10px;font-size:13px;margin-top:40px;}
+.rebuild-btn{background:#b30000;color:white;border:none;padding:10px 22px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;transition:0.3s;}
+.rebuild-btn:hover{background:#ff3c3c;}
+</style>
+</head>
+<body>
+<div class="navbar">
+  <div class="logo">🕵️ Forensic AI</div>
+  <div class="profile"><i class="fa-solid fa-user-shield"></i> {{ current_user.full_name }}</div>
+</div>
+<div class="wrapper">
+  <div class="sidebar">
+    <a href="{{ url_for('admin_dashboard') }}" class="active"><i class="fa-solid fa-chart-line"></i>Dashboard</a>
+    <a href="{{ url_for('admin_criminals') }}"><i class="fa-solid fa-database"></i>Criminal Database</a>
+    <a href="{{ url_for('admin_add_criminal') }}"><i class="fa-solid fa-plus"></i>Add Criminal</a>
+    <a href="{{ url_for('admin_police') }}"><i class="fa-solid fa-building"></i>Police Officers</a>
+    <a href="{{ url_for('admin_add_police') }}"><i class="fa-solid fa-user-shield"></i>Add Police</a>
+    <a href="{{ url_for('logout') }}"><i class="fa-solid fa-right-from-bracket"></i>Logout</a>
+  </div>
+  <div class="content">
+    <h1 class="page-title">Admin Dashboard</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}<div style="padding:10px 14px;border-radius:8px;margin-bottom:16px;font-size:13px;background:{% if cat=='danger' %}#fff0f0{% elif cat=='success' %}#f0fff4{% else %}#e6f7ff{% endif %};border:1px solid #ddd;">{{ msg }}</div>{% endfor %}
+    {% endwith %}
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fa-solid fa-user-shield"></i></div>
+        <div class="stat-info"><h3>{{ stats.police }}</h3><p>Police Officers</p></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fa-solid fa-database"></i></div>
+        <div class="stat-info"><h3>{{ stats.criminals }}</h3><p>Criminal Records</p></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fa-solid fa-folder-open"></i></div>
+        <div class="stat-info"><h3>{{ stats.cases }}</h3><p>Total Cases</p></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fa-solid fa-exclamation-triangle"></i></div>
+        <div class="stat-info"><h3>{{ stats.wanted }}</h3><p>Wanted Criminals</p></div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <h2 style="font-size:18px;color:#1a1a2e;">Quick Actions</h2>
+      <button class="rebuild-btn" onclick="rebuildDB()"><i class="fa-solid fa-rotate"></i> Rebuild Face Index</button>
+    </div>
+
+    <div class="action-cards">
+      <a href="{{ url_for('admin_add_criminal') }}" class="action-card">
+        <i class="fa-solid fa-user-plus"></i>
+        <h4>Add Criminal</h4>
+        <p>Register a new suspect with photo and facial attributes.</p>
+      </a>
+      <a href="{{ url_for('admin_criminals') }}" class="action-card">
+        <i class="fa-solid fa-database"></i>
+        <h4>Criminal Database</h4>
+        <p>View, search, and manage all criminal records.</p>
+      </a>
+      <a href="{{ url_for('admin_add_police') }}" class="action-card">
+        <i class="fa-solid fa-user-shield"></i>
+        <h4>Add Police Officer</h4>
+        <p>Register new officers with station and badge details.</p>
+      </a>
+      <a href="{{ url_for('admin_police') }}" class="action-card">
+        <i class="fa-solid fa-building"></i>
+        <h4>View Officers</h4>
+        <p>Manage registered police officers and their access.</p>
+      </a>
+    </div>
+  </div>
+</div>
+<div class="footer">Forensic AI Investigation System — For Law Enforcement Use Only</div>
+<script>
+function rebuildDB() {
+  if (!confirm('Rebuild face embedding index? This may take several minutes.')) return;
+  fetch('{{ url_for("admin_rebuild_db") }}', {method:'POST'})
+    .then(r=>r.json()).then(d=>alert(d.message)).catch(e=>alert('Error: '+e));
+}
+</script>
+</body>
+</html>

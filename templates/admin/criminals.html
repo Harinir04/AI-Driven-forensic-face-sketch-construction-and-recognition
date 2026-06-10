@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Criminal Database — Forensic AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+body{background:#f4f6fb;}
+.navbar{background:linear-gradient(90deg,#b30000,#ff2a2a);display:flex;justify-content:space-between;align-items:center;padding:18px 70px;box-shadow:0 6px 20px rgba(0,0,0,0.25);}
+.logo{background:#1f3a3d;padding:18px 35px;border-radius:0 0 40px 40px;color:white;font-weight:600;font-size:18px;}
+.profile{color:white;font-size:15px;}
+.wrapper{display:flex;}
+.sidebar{width:240px;min-height:100vh;background:linear-gradient(180deg,#8b0000,#d10000);padding-top:40px;box-shadow:5px 0 20px rgba(0,0,0,0.3);}
+.sidebar a{display:flex;align-items:center;gap:12px;margin:8px 16px;padding:13px 16px;border-radius:12px;text-decoration:none;color:white;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);transition:0.35s;font-size:14px;}
+.sidebar a i{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.15);border-radius:8px;}
+.sidebar a:hover,.sidebar a.active{background:white;color:#b30000;transform:translateX(5px);}
+.sidebar a.active i{background:#b30000;color:white;}
+.content{flex:1;padding:40px 55px;}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:gap;}
+.page-title{font-size:26px;font-weight:700;color:#1a1a2e;}
+.header-actions{display:flex;gap:12px;align-items:center;}
+.btn{padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;text-decoration:none;border:none;cursor:pointer;transition:0.3s;}
+.btn-red{background:#b30000;color:white;}
+.btn-red:hover{background:#ff3c3c;}
+.btn-outline{background:white;color:#b30000;border:2px solid #b30000;}
+.btn-outline:hover{background:#b30000;color:white;}
+.csv-form{display:inline;}
+.table-wrap{background:white;border-radius:16px;padding:24px;box-shadow:0 6px 18px rgba(0,0,0,0.07);}
+table{width:100%;border-collapse:collapse;}
+th{text-align:left;padding:12px 14px;font-size:13px;font-weight:600;color:#888;border-bottom:2px solid #f0f0f0;}
+td{padding:12px 14px;font-size:13px;color:#333;border-bottom:1px solid #f5f5f5;}
+tr:hover td{background:#fafafa;}
+.face-thumb{width:44px;height:44px;border-radius:8px;object-fit:cover;}
+.face-placeholder{width:44px;height:44px;border-radius:8px;background:#eee;display:flex;align-items:center;justify-content:center;color:#aaa;}
+.status-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+.status-wanted{background:#fff0f0;color:#b30000;}
+.status-arrested{background:#e6f7ff;color:#0050b3;}
+.status-released{background:#e6f7ea;color:#0a7a1e;}
+.status-deceased{background:#f5f5f5;color:#666;}
+.view-btn{background:#f5f5f5;color:#333;padding:5px 12px;border-radius:8px;text-decoration:none;font-size:12px;transition:0.3s;}
+.view-btn:hover{background:#b30000;color:white;}
+.empty-state{text-align:center;padding:60px;color:#888;}
+.empty-state i{font-size:50px;margin-bottom:16px;color:#ddd;display:block;}
+.alert{padding:10px 14px;border-radius:8px;margin-bottom:16px;font-size:13px;}
+.alert-success{background:#f0fff4;border:1px solid #b7eb8f;color:#135200;}
+.alert-danger{background:#fff0f0;border:1px solid #f5c6c6;color:#b30000;}
+.footer{background:#111;color:white;text-align:center;padding:10px;font-size:13px;margin-top:40px;}
+</style>
+</head>
+<body>
+<div class="navbar">
+  <div class="logo">🕵️ Forensic AI</div>
+  <div class="profile"><i class="fa-solid fa-user-shield"></i> {{ current_user.full_name }}</div>
+</div>
+<div class="wrapper">
+  <div class="sidebar">
+    <a href="{{ url_for('admin_dashboard') }}"><i class="fa-solid fa-chart-line"></i>Dashboard</a>
+    <a href="{{ url_for('admin_criminals') }}" class="active"><i class="fa-solid fa-database"></i>Criminal Database</a>
+    <a href="{{ url_for('admin_add_criminal') }}"><i class="fa-solid fa-plus"></i>Add Criminal</a>
+    <a href="{{ url_for('admin_police') }}"><i class="fa-solid fa-building"></i>Police Officers</a>
+    <a href="{{ url_for('admin_add_police') }}"><i class="fa-solid fa-user-shield"></i>Add Police</a>
+    <a href="{{ url_for('logout') }}"><i class="fa-solid fa-right-from-bracket"></i>Logout</a>
+  </div>
+  <div class="content">
+    <div class="page-header">
+      <h1 class="page-title">Criminal Database ({{ criminals|length }})</h1>
+      <div class="header-actions">
+        <form class="csv-form" method="POST" action="{{ url_for('admin_upload_csv') }}" enctype="multipart/form-data">
+          <input type="file" name="file" accept=".csv" style="display:none" id="csvInput" onchange="this.form.submit()">
+          <button type="button" class="btn btn-outline" onclick="document.getElementById('csvInput').click()">
+            <i class="fa-solid fa-file-csv"></i> Upload CSV
+          </button>
+        </form>
+        <a href="{{ url_for('admin_add_criminal') }}" class="btn btn-red"><i class="fa-solid fa-plus"></i> Add Criminal</a>
+      </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}<div class="alert alert-{{ cat }}">{{ msg }}</div>{% endfor %}
+    {% endwith %}
+
+    <div class="table-wrap">
+      {% if criminals %}
+      <table>
+        <thead>
+          <tr><th>Photo</th><th>Code</th><th>Name</th><th>Age</th><th>Crime</th><th>Status</th><th>Added</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+          {% for c in criminals %}
+          <tr>
+            <td>
+              {% if c.face_image_path %}
+                <img class="face-thumb" src="{{ url_for('serve_criminal', filename=c.face_image_path) }}" alt="{{ c.name }}">
+              {% else %}
+                <div class="face-placeholder"><i class="fa-solid fa-user"></i></div>
+              {% endif %}
+            </td>
+            <td><code>{{ c.criminal_code or '—' }}</code></td>
+            <td><strong>{{ c.name }}</strong></td>
+            <td>{{ c.age or '—' }}</td>
+            <td>{{ c.crime_type or '—' }}</td>
+            <td><span class="status-badge status-{{ c.status or 'wanted' }}">{{ (c.status or 'wanted')|title }}</span></td>
+            <td>{{ c.added_at[:10] if c.added_at else '—' }}</td>
+            <td><a href="{{ url_for('admin_criminal_detail', cid=c.id) }}" class="view-btn">View</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state">
+        <i class="fa-solid fa-database"></i>
+        <p>No criminal records yet.</p>
+        <a href="{{ url_for('admin_add_criminal') }}" style="color:#b30000;text-decoration:none;font-weight:600;">Add the first record →</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+<div class="footer">Forensic AI Investigation System</div>
+</body>
+</html>

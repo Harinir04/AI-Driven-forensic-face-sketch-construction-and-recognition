@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add Criminal — Forensic AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+body{background:#f4f6fb;}
+.navbar{background:linear-gradient(90deg,#b30000,#ff2a2a);display:flex;justify-content:space-between;align-items:center;padding:18px 70px;box-shadow:0 6px 20px rgba(0,0,0,0.25);}
+.logo{background:#1f3a3d;padding:18px 35px;border-radius:0 0 40px 40px;color:white;font-weight:600;font-size:18px;}
+.profile{color:white;font-size:15px;}
+.wrapper{display:flex;}
+.sidebar{width:240px;min-height:100vh;background:linear-gradient(180deg,#8b0000,#d10000);padding-top:40px;box-shadow:5px 0 20px rgba(0,0,0,0.3);}
+.sidebar a{display:flex;align-items:center;gap:12px;margin:8px 16px;padding:13px 16px;border-radius:12px;text-decoration:none;color:white;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);transition:0.35s;font-size:14px;}
+.sidebar a i{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.15);border-radius:8px;}
+.sidebar a:hover,.sidebar a.active{background:white;color:#b30000;transform:translateX(5px);}
+.sidebar a.active i{background:#b30000;color:white;}
+.content{flex:1;padding:40px 55px;}
+.page-title{font-size:26px;font-weight:700;margin-bottom:28px;color:#1a1a2e;}
+.form-card{background:white;border-radius:18px;padding:35px;border:2px solid #eee;box-shadow:0 8px 22px rgba(0,0,0,0.08);max-width:700px;}
+.section-title{font-size:15px;font-weight:700;color:#b30000;margin:22px 0 14px;padding-bottom:8px;border-bottom:2px solid #f0f0f0;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.input-group{margin-bottom:14px;}
+.input-group label{display:block;font-size:12px;font-weight:600;color:#555;margin-bottom:5px;}
+.input-group input,.input-group select,.input-group textarea{width:100%;padding:11px 13px;border:1px solid #ddd;border-radius:10px;font-size:14px;font-family:'Poppins',sans-serif;outline:none;transition:0.3s;}
+.input-group input:focus,.input-group select:focus,.input-group textarea:focus{border-color:#b30000;box-shadow:0 0 0 3px rgba(179,0,0,0.08);}
+.photo-upload{border:2px dashed #ddd;border-radius:12px;padding:24px;text-align:center;cursor:pointer;transition:0.3s;}
+.photo-upload:hover{border-color:#b30000;background:#fff8f8;}
+.photo-upload i{font-size:32px;color:#ccc;display:block;margin-bottom:8px;}
+.photo-upload p{font-size:13px;color:#888;}
+.photo-preview{max-width:200px;border-radius:10px;margin-top:12px;display:none;}
+.marks-section{background:#f9f9f9;border-radius:12px;padding:18px;margin-top:14px;}
+.mark-item{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:center;margin-bottom:10px;}
+.mark-item input{padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;outline:none;}
+.add-mark-btn{background:#f0f0f0;border:1px solid #ddd;padding:9px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;transition:0.3s;}
+.add-mark-btn:hover{background:#b30000;color:white;border-color:#b30000;}
+.del-mark{background:#fff0f0;border:1px solid #f5c6c6;color:#b30000;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:12px;}
+.submit-btn{width:100%;padding:14px;background:linear-gradient(45deg,#b30000,#ff3030);border:none;border-radius:30px;color:white;font-weight:600;font-size:15px;cursor:pointer;transition:0.3s;margin-top:24px;}
+.submit-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,0.2);}
+.alert{padding:10px 14px;border-radius:8px;margin-bottom:16px;font-size:13px;}
+.alert-danger{background:#fff0f0;border:1px solid #f5c6c6;color:#b30000;}
+.footer{background:#111;color:white;text-align:center;padding:10px;font-size:13px;margin-top:40px;}
+</style>
+</head>
+<body>
+<div class="navbar">
+  <div class="logo">🕵️ Forensic AI</div>
+  <div class="profile"><i class="fa-solid fa-user-shield"></i> {{ current_user.full_name }}</div>
+</div>
+<div class="wrapper">
+  <div class="sidebar">
+    <a href="{{ url_for('admin_dashboard') }}"><i class="fa-solid fa-chart-line"></i>Dashboard</a>
+    <a href="{{ url_for('admin_criminals') }}"><i class="fa-solid fa-database"></i>Criminal Database</a>
+    <a href="{{ url_for('admin_add_criminal') }}" class="active"><i class="fa-solid fa-plus"></i>Add Criminal</a>
+    <a href="{{ url_for('admin_police') }}"><i class="fa-solid fa-building"></i>Police Officers</a>
+    <a href="{{ url_for('admin_add_police') }}"><i class="fa-solid fa-user-shield"></i>Add Police</a>
+    <a href="{{ url_for('logout') }}"><i class="fa-solid fa-right-from-bracket"></i>Logout</a>
+  </div>
+  <div class="content">
+    <h1 class="page-title">Add Criminal Record</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}<div class="alert alert-{{ cat }}">{{ msg }}</div>{% endfor %}
+    {% endwith %}
+
+    <div class="form-card">
+      <form method="POST" action="{{ url_for('admin_add_criminal') }}" enctype="multipart/form-data">
+
+        <div class="section-title"><i class="fa-solid fa-user"></i> Basic Information</div>
+        <div class="form-row">
+          <div class="input-group"><label>Full Name *</label><input name="name" required placeholder="Suspect full name"></div>
+          <div class="input-group"><label>Age</label><input type="number" name="age" min="1" max="120" placeholder="e.g. 35"></div>
+        </div>
+        <div class="form-row">
+          <div class="input-group"><label>Gender</label>
+            <select name="gender">
+              <option value="">— Select —</option>
+              <option>male</option><option>female</option><option>unknown</option>
+            </select>
+          </div>
+          <div class="input-group"><label>Status</label>
+            <select name="status">
+              <option value="wanted">Wanted</option>
+              <option value="arrested">Arrested</option>
+              <option value="released">Released</option>
+              <option value="deceased">Deceased</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="section-title"><i class="fa-solid fa-gavel"></i> Crime Information</div>
+        <div class="form-row">
+          <div class="input-group"><label>Crime Type</label><input name="crime_type" placeholder="e.g. Armed Robbery"></div>
+          <div class="input-group"><label>Crime Year</label><input type="number" name="crime_year" placeholder="e.g. 2023"></div>
+        </div>
+        <div class="form-row">
+          <div class="input-group"><label>Number of Crimes</label><input type="number" name="no_of_crimes" value="1" min="0"></div>
+          <div class="input-group"><label>Last Known Location</label><input name="location" placeholder="City / Area"></div>
+        </div>
+        <div class="input-group"><label>Description / Notes</label><textarea name="description" rows="3" placeholder="Any additional details about this suspect..."></textarea></div>
+
+        <div class="section-title"><i class="fa-solid fa-face-smile"></i> Facial Attributes</div>
+        <div class="form-row">
+          <div class="input-group"><label>Skin Tone</label>
+            <select name="skin_tone">
+              <option value="">— Select —</option>
+              <option>fair</option><option>light</option><option>medium</option>
+              <option>olive</option><option>brown</option><option>dark brown</option><option>dark</option>
+            </select>
+          </div>
+          <div class="input-group"><label>Hair Color</label><input name="hair_color" placeholder="e.g. black, brown, grey"></div>
+        </div>
+
+        <div class="section-title"><i class="fa-solid fa-star-of-life"></i> Distinguishing Marks</div>
+        <div class="marks-section">
+          <p style="font-size:13px;color:#666;margin-bottom:12px;">Add scars, moles, tattoos, or other marks with their locations.</p>
+          <div id="marks-container"></div>
+          <button type="button" class="add-mark-btn" onclick="addMark()"><i class="fa-solid fa-plus"></i> Add Mark</button>
+          <input type="hidden" name="marks_json" id="marks_json" value="[]">
+        </div>
+
+        <div class="section-title"><i class="fa-solid fa-image"></i> Suspect Photo</div>
+        <div class="photo-upload" onclick="document.getElementById('photoInput').click()">
+          <i class="fa-solid fa-camera"></i>
+          <p>Click to upload suspect photo (JPG / PNG)</p>
+          <img id="photoPreview" class="photo-preview">
+        </div>
+        <input type="file" id="photoInput" name="photo" accept=".jpg,.jpeg,.png" style="display:none" onchange="previewPhoto(this)">
+
+        <button type="submit" class="submit-btn"><i class="fa-solid fa-plus"></i> Add Criminal Record</button>
+      </form>
+    </div>
+  </div>
+</div>
+<div class="footer">Forensic AI Investigation System</div>
+<script>
+var marks = [];
+function addMark() {
+  var id = Date.now();
+  marks.push({id: id, type:'', location:''});
+  renderMarks();
+}
+function removeMark(id) {
+  marks = marks.filter(function(m){return m.id!==id;});
+  renderMarks();
+}
+function renderMarks() {
+  var c = document.getElementById('marks-container');
+  c.innerHTML = '';
+  marks.forEach(function(m) {
+    c.innerHTML += '<div class="mark-item">' +
+      '<input placeholder="Type (e.g. scar, mole)" onchange="updateMark('+m.id+',\'type\',this.value)">' +
+      '<input placeholder="Location (e.g. left cheek)" onchange="updateMark('+m.id+',\'location\',this.value)">' +
+      '<button type="button" class="del-mark" onclick="removeMark('+m.id+')"><i class="fa-solid fa-trash"></i></button></div>';
+  });
+  updateJSON();
+}
+function updateMark(id, field, val) {
+  marks.forEach(function(m){if(m.id===id)m[field]=val;});
+  updateJSON();
+}
+function updateJSON() {
+  document.getElementById('marks_json').value = JSON.stringify(
+    marks.map(function(m){return {type:m.type,location:m.location};})
+  );
+}
+function previewPhoto(input) {
+  if (input.files && input.files[0]) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var p = document.getElementById('photoPreview');
+      p.src = e.target.result;
+      p.style.display = 'block';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+</script>
+</body>
+</html>

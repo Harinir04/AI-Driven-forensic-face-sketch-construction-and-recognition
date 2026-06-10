@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Superadmin — Forensic AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+body{background:#f4f6fb;}
+.navbar{background:linear-gradient(90deg,#1a1a2e,#16213e);display:flex;justify-content:space-between;align-items:center;padding:18px 70px;box-shadow:0 6px 20px rgba(0,0,0,0.35);}
+.logo{background:#b30000;padding:18px 35px;border-radius:0 0 40px 40px;color:white;font-weight:600;font-size:18px;}
+.profile{color:#ccc;font-size:15px;}
+.wrapper{display:flex;}
+.sidebar{width:240px;min-height:100vh;background:linear-gradient(180deg,#1a1a2e,#16213e);padding-top:40px;box-shadow:5px 0 20px rgba(0,0,0,0.3);}
+.sidebar a{display:flex;align-items:center;gap:12px;margin:8px 16px;padding:13px 16px;border-radius:12px;text-decoration:none;color:#ccc;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);transition:0.35s;font-size:14px;}
+.sidebar a i{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.1);border-radius:8px;}
+.sidebar a:hover,.sidebar a.active{background:white;color:#1a1a2e;transform:translateX(5px);}
+.content{flex:1;padding:40px 55px;}
+.page-title{font-size:26px;font-weight:700;margin-bottom:28px;color:#1a1a2e;}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:20px;margin-bottom:36px;}
+.stat-card{background:white;padding:24px;border-radius:16px;border-left:5px solid #1a1a2e;box-shadow:0 6px 18px rgba(0,0,0,0.07);display:flex;align-items:center;gap:16px;}
+.stat-icon{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#1a1a2e,#444);display:flex;align-items:center;justify-content:center;font-size:20px;color:white;}
+.stat-info h3{font-size:26px;font-weight:700;color:#1a1a2e;}
+.stat-info p{font-size:13px;color:#888;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:28px;}
+.panel{background:white;border-radius:16px;padding:24px;box-shadow:0 6px 18px rgba(0,0,0,0.07);}
+.panel-title{font-size:16px;font-weight:700;color:#1a1a2e;margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid #f0f0f0;}
+.form-row{display:flex;flex-direction:column;gap:10px;}
+.form-row input{padding:11px 14px;border:1px solid #ddd;border-radius:10px;font-size:14px;outline:none;font-family:'Poppins',sans-serif;}
+.form-row input:focus{border-color:#1a1a2e;}
+.submit-btn{background:#1a1a2e;color:white;border:none;padding:11px 22px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:0.3s;margin-top:6px;}
+.submit-btn:hover{background:#333;}
+.admin-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f5f5f5;font-size:13px;}
+.admin-row:last-child{border-bottom:none;}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+.badge-active{background:#e6f7ea;color:#0a7a1e;}
+.badge-inactive{background:#fff0f0;color:#b30000;}
+.toggle-btn{border:none;padding:5px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:0.3s;}
+.toggle-btn-d{background:#fff0f0;color:#b30000;border:1px solid #f5c6c6;}
+.toggle-btn-a{background:#e6f7ea;color:#0a7a1e;border:1px solid #b7eb8f;}
+.alert{padding:10px 14px;border-radius:8px;margin-bottom:16px;font-size:13px;}
+.alert-success{background:#f0fff4;border:1px solid #b7eb8f;color:#135200;}
+.alert-danger{background:#fff0f0;border:1px solid #f5c6c6;color:#b30000;}
+.footer{background:#111;color:white;text-align:center;padding:10px;font-size:13px;margin-top:40px;}
+</style>
+</head>
+<body>
+<div class="navbar">
+  <div class="logo">🛡️ Superadmin</div>
+  <div class="profile"><i class="fa-solid fa-user-tie"></i> {{ current_user.full_name }}</div>
+</div>
+<div class="wrapper">
+  <div class="sidebar">
+    <a href="{{ url_for('superadmin_dashboard') }}" class="active"><i class="fa-solid fa-chart-line"></i>Dashboard</a>
+    <a href="{{ url_for('superadmin_audit') }}"><i class="fa-solid fa-scroll"></i>Audit Log</a>
+    <a href="{{ url_for('admin_dashboard') }}"><i class="fa-solid fa-shield-halved"></i>Admin Panel</a>
+    <a href="{{ url_for('logout') }}"><i class="fa-solid fa-right-from-bracket"></i>Logout</a>
+  </div>
+  <div class="content">
+    <h1 class="page-title">System Overview</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}<div class="alert alert-{{ cat }}">{{ msg }}</div>{% endfor %}
+    {% endwith %}
+
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-user-shield"></i></div><div class="stat-info"><h3>{{ stats.admins }}</h3><p>Admins</p></div></div>
+      <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-user"></i></div><div class="stat-info"><h3>{{ stats.police }}</h3><p>Police Officers</p></div></div>
+      <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-database"></i></div><div class="stat-info"><h3>{{ stats.criminals }}</h3><p>Criminal Records</p></div></div>
+      <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-folder"></i></div><div class="stat-info"><h3>{{ stats.cases }}</h3><p>Total Cases</p></div></div>
+    </div>
+
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-title">Create Admin Account</div>
+        <form method="POST" action="{{ url_for('superadmin_create_admin') }}">
+          <div class="form-row">
+            <input name="full_name" placeholder="Full Name" required>
+            <input name="username" placeholder="Username" required>
+            <input type="email" name="email" placeholder="Email (optional)">
+            <input type="password" name="password" placeholder="Temporary Password" required minlength="8">
+            <button type="submit" class="submit-btn"><i class="fa-solid fa-plus"></i> Create Admin</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Admin Accounts ({{ admins|length }})</div>
+        {% if admins %}
+          {% for a in admins %}
+          <div class="admin-row">
+            <div>
+              <strong style="font-size:14px;">{{ a.full_name }}</strong>
+              <div style="font-size:12px;color:#888;">{{ a.username }}{% if a.email %} · {{ a.email }}{% endif %}</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <span class="badge {% if a.is_active %}badge-active{% else %}badge-inactive{% endif %}">{{ 'Active' if a.is_active else 'Inactive' }}</span>
+              <form method="POST" action="{{ url_for('superadmin_toggle_admin', uid=a.id) }}">
+                <button type="submit" class="toggle-btn {% if a.is_active %}toggle-btn-d{% else %}toggle-btn-a{% endif %}">{{ 'Disable' if a.is_active else 'Enable' }}</button>
+              </form>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div style="text-align:center;padding:24px;color:#aaa;font-size:13px;">No admins created yet.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+<div class="footer">Forensic AI Investigation System</div>
+</body>
+</html>

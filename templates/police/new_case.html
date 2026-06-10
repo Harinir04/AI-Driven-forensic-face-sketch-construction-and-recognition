@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>New Investigation — Forensic AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+body{background:#f4f6fb;}
+.navbar{background:linear-gradient(90deg,#b30000,#ff2a2a);display:flex;justify-content:space-between;align-items:center;padding:18px 70px;box-shadow:0 6px 20px rgba(0,0,0,0.25);}
+.logo{background:#1f3a3d;padding:18px 35px;border-radius:0 0 40px 40px;color:white;font-weight:600;font-size:18px;}
+.profile{color:white;font-size:15px;}
+.wrapper{display:flex;}
+.sidebar{width:240px;min-height:100vh;background:linear-gradient(180deg,#8b0000,#d10000);padding-top:40px;box-shadow:5px 0 20px rgba(0,0,0,0.3);flex-shrink:0;}
+.sidebar a{display:flex;align-items:center;gap:12px;margin:8px 16px;padding:13px 16px;border-radius:12px;text-decoration:none;color:white;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);transition:0.35s;font-size:14px;}
+.sidebar a i{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.15);border-radius:8px;}
+.sidebar a:hover,.sidebar a.active{background:white;color:#b30000;transform:translateX(5px);}
+.sidebar a.active i{background:#b30000;color:white;}
+.content{flex:1;padding:36px 50px;max-width:calc(100vw - 240px);}
+
+/* Progress bar */
+.steps-bar{display:flex;align-items:center;margin-bottom:36px;gap:0;}
+.step-item{display:flex;align-items:center;flex:1;}
+.step-circle{width:42px;height:42px;border-radius:50%;border:3px solid #ddd;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#aaa;background:white;flex-shrink:0;transition:0.4s;}
+.step-circle.active{border-color:#b30000;color:#b30000;}
+.step-circle.done{border-color:#b30000;background:#b30000;color:white;}
+.step-label{font-size:12px;font-weight:600;color:#aaa;margin-top:5px;}
+.step-label.active,.step-label.done{color:#b30000;}
+.step-connector{flex:1;height:3px;background:#ddd;transition:0.4s;}
+.step-connector.done{background:#b30000;}
+.step-col{display:flex;flex-direction:column;align-items:center;}
+
+/* Panels */
+.panel{background:white;border-radius:18px;border:2px solid #eee;padding:28px;margin-bottom:24px;box-shadow:0 6px 18px rgba(0,0,0,0.06);display:none;}
+.panel.active{display:block;}
+.panel-header{display:flex;align-items:center;gap:14px;margin-bottom:22px;}
+.panel-icon{width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,#b30000,#ff5555);display:flex;align-items:center;justify-content:center;font-size:20px;color:white;}
+.panel-title{font-size:18px;font-weight:700;color:#1a1a2e;}
+.panel-subtitle{font-size:13px;color:#888;margin-top:2px;}
+
+/* Step 1 — Voice/Text */
+.voice-section{display:flex;gap:20px;flex-wrap:wrap;}
+.voice-recorder-box{flex:1;min-width:260px;background:#fff8f8;border:2px dashed #f5c6c6;border-radius:14px;padding:28px;text-align:center;}
+.record-btn{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#b30000,#ff3030);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:28px;color:white;margin:0 auto 14px;box-shadow:0 8px 22px rgba(179,0,0,0.35);transition:0.3s;}
+.record-btn:hover{transform:scale(1.08);}
+.record-btn.recording{background:linear-gradient(135deg,#333,#555);animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(179,0,0,0.5);}50%{box-shadow:0 0 0 18px rgba(179,0,0,0);}}
+.record-status{font-size:14px;font-weight:600;color:#666;}
+.recording .record-status{color:#b30000;}
+.text-input-box{flex:1;min-width:260px;}
+.text-input-box textarea{width:100%;height:130px;padding:14px;border:1px solid #ddd;border-radius:12px;font-size:14px;font-family:'Poppins',sans-serif;outline:none;resize:vertical;line-height:1.6;}
+.text-input-box textarea:focus{border-color:#b30000;box-shadow:0 0 0 3px rgba(179,0,0,0.08);}
+.transcript-box{background:#f0f7ff;border:1px solid #91d5ff;border-radius:10px;padding:14px;font-size:14px;line-height:1.6;margin-top:14px;display:none;}
+
+/* Step 2 — Attributes */
+.attr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;}
+.attr-item{background:#f9f9f9;border-radius:10px;padding:12px 14px;}
+.attr-label{font-size:11px;font-weight:700;color:#b30000;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;}
+.attr-value{font-size:14px;color:#1a1a2e;}
+.marks-list{margin-top:16px;}
+.mark-tag{display:inline-block;background:#fff0f0;border:1px solid #f5c6c6;color:#b30000;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;margin:4px;}
+.prompt-box{background:#fff3cd;border:1px solid #ffc107;border-radius:10px;padding:14px;font-size:13px;margin-top:16px;line-height:1.6;}
+.prompt-label{font-weight:700;margin-bottom:6px;color:#856404;}
+
+/* Step 3 — Generate */
+.sketch-upload-zone{background:#f8f8f8;border:2px dashed #ddd;border-radius:14px;padding:22px;text-align:center;margin-bottom:18px;cursor:pointer;transition:0.3s;}
+.sketch-upload-zone:hover{border-color:#b30000;background:#fff8f8;}
+.sketch-upload-zone i{font-size:30px;color:#ccc;display:block;margin-bottom:8px;}
+.sketch-preview-img{max-height:200px;border-radius:10px;margin-top:10px;display:none;}
+.generate-options{display:flex;align-items:center;gap:16px;margin-bottom:18px;flex-wrap:wrap;}
+.num-label{font-size:13px;font-weight:600;color:#555;}
+.num-select{padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;outline:none;}
+.gen-btn{background:linear-gradient(45deg,#b30000,#ff3030);color:white;border:none;padding:12px 28px;border-radius:30px;font-size:14px;font-weight:600;cursor:pointer;transition:0.3s;}
+.gen-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(179,0,0,0.35);}
+.gen-btn:disabled{background:#ccc;cursor:not-allowed;transform:none;box-shadow:none;}
+.faces-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-top:20px;}
+.face-card{border-radius:14px;overflow:hidden;border:3px solid transparent;cursor:pointer;transition:0.3s;position:relative;background:#eee;}
+.face-card:hover{border-color:#b30000;box-shadow:0 8px 22px rgba(179,0,0,0.25);}
+.face-card.selected{border-color:#b30000;box-shadow:0 8px 22px rgba(179,0,0,0.4);}
+.face-card img{width:100%;aspect-ratio:1;object-fit:cover;display:block;}
+.face-card .sel-badge{position:absolute;top:8px;right:8px;background:#b30000;color:white;border-radius:50%;width:26px;height:26px;display:none;align-items:center;justify-content:center;font-size:14px;}
+.face-card.selected .sel-badge{display:flex;}
+.face-num{position:absolute;bottom:8px;left:8px;background:rgba(0,0,0,0.55);color:white;padding:3px 9px;border-radius:8px;font-size:12px;font-weight:600;z-index:2;}
+.face-card.pending{cursor:default;background:linear-gradient(135deg,#f5f5f5 0%,#eaeaea 100%);}
+.face-card.pending:hover{border-color:transparent;box-shadow:none;transform:none;}
+.face-placeholder{width:100%;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.face-placeholder i{animation:spin 1s linear infinite;}
+
+/* Step 4 — Results (sketch + top-5 horizontal layout) */
+
+.match-layout{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap;}
+.match-board{flex:1;min-width:0;display:flex;gap:16px;align-items:stretch;flex-wrap:nowrap;overflow-x:auto;padding-bottom:10px;}
+.sketch-card{flex:0 0 210px;border:2px solid #b30000;border-radius:14px;padding:14px;background:#fff;box-shadow:0 4px 14px rgba(179,0,0,0.12);display:flex;flex-direction:column;align-items:center;}
+.sketch-card .sk-label{font-size:13px;font-weight:700;color:#b30000;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.sketch-card img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;background:#f4f4f4;}
+
+.match-card{flex:0 0 210px;background:white;border-radius:14px;border:2px solid #eee;box-shadow:0 4px 14px rgba(0,0,0,0.06);padding:0 0 14px;position:relative;cursor:pointer;transition:0.25s;display:flex;flex-direction:column;}
+.match-card:hover{border-color:#b30000;transform:translateY(-3px);box-shadow:0 10px 24px rgba(179,0,0,0.15);}
+.match-card.selected{border-color:#b30000;box-shadow:0 10px 28px rgba(179,0,0,0.3);}
+.match-rank{position:absolute;top:-10px;left:14px;width:28px;height:28px;border-radius:50%;background:#b30000;color:white;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;z-index:2;box-shadow:0 2px 6px rgba(0,0,0,0.2);}
+.match-title{text-align:center;font-size:13px;font-weight:700;color:#1a1a2e;padding:14px 10px 6px;}
+.match-score-pill{background:#fff3cd;color:#856404;font-weight:700;font-size:14px;text-align:center;padding:6px 10px;margin:0 12px 10px;border-radius:8px;}
+.match-card img{width:calc(100% - 24px);margin:0 12px;aspect-ratio:1;object-fit:cover;border-radius:8px;background:#eee;}
+.match-meta{padding:10px 14px 0;font-size:12px;color:#555;line-height:1.5;}
+.match-meta .mm-name{font-weight:700;color:#1a1a2e;font-size:13px;margin-bottom:2px;}
+
+.detail-panel{flex:0 0 280px;background:white;border:2px solid #b30000;border-radius:14px;padding:18px;box-shadow:0 6px 20px rgba(179,0,0,0.1);font-size:13px;line-height:1.6;color:#333;max-height:500px;overflow-y:auto;}
+.detail-panel h3{font-size:15px;font-weight:700;color:#b30000;margin-bottom:12px;border-bottom:1px solid #f5c6c6;padding-bottom:8px;}
+.detail-panel .dp-row{margin-bottom:10px;}
+.detail-panel .dp-label{font-weight:700;color:#b30000;font-size:12px;text-transform:uppercase;letter-spacing:0.3px;}
+.detail-panel .dp-value{color:#1a1a2e;}
+.detail-empty{color:#999;font-style:italic;text-align:center;padding:30px 10px;}
+
+.no-match-box{text-align:center;padding:50px;background:white;border-radius:16px;border:2px solid #eee;}
+.no-match-box i{font-size:50px;color:#ddd;display:block;margin-bottom:14px;}
+
+/* Buttons */
+.action-btn{background:linear-gradient(45deg,#b30000,#ff3030);color:white;border:none;padding:13px 30px;border-radius:30px;font-size:14px;font-weight:600;cursor:pointer;transition:0.3s;margin-top:18px;}
+.action-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(179,0,0,0.35);}
+.action-btn:disabled{background:#ccc;cursor:not-allowed;transform:none;box-shadow:none;}
+.action-btn-outline{background:white;color:#b30000;border:2px solid #b30000;padding:11px 24px;border-radius:30px;font-size:14px;font-weight:600;cursor:pointer;transition:0.3s;margin-top:18px;margin-left:10px;}
+.action-btn-outline:hover{background:#b30000;color:white;}
+
+/* Loader */
+.loader-wrap{text-align:center;padding:30px;}
+.loader{width:48px;height:48px;border:5px solid #f0f0f0;border-top:5px solid #b30000;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 14px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loader-text{color:#666;font-size:14px;}
+.footer{background:#111;color:white;text-align:center;padding:10px;font-size:13px;margin-top:40px;}
+.error-box{background:#fff0f0;border:1px solid #f5c6c6;border-radius:10px;padding:12px 16px;font-size:13px;color:#b30000;display:none;}
+</style>
+</head>
+<body>
+<div class="navbar">
+  <div class="logo">🕵️ Forensic AI</div>
+  <div class="profile"><i class="fa-solid fa-user-shield"></i> {{ current_user.full_name }}</div>
+</div>
+<div class="wrapper">
+  <div class="sidebar">
+    <a href="{{ url_for('police_dashboard') }}"><i class="fa-solid fa-chart-line"></i>Dashboard</a>
+    <a href="{{ url_for('police_new_case') }}" class="active"><i class="fa-solid fa-magnifying-glass"></i>New Investigation</a>
+    <a href="{{ url_for('police_cases') }}"><i class="fa-solid fa-folder-open"></i>My Cases</a>
+    <a href="{{ url_for('logout') }}"><i class="fa-solid fa-right-from-bracket"></i>Logout</a>
+  </div>
+
+  <div class="content">
+    <h1 style="font-size:24px;font-weight:700;margin-bottom:28px;color:#1a1a2e;">
+      <i class="fa-solid fa-magnifying-glass" style="color:#b30000;margin-right:8px;"></i>
+      New Forensic Investigation
+    </h1>
+
+    <!-- Progress steps -->
+    <div class="steps-bar">
+      <div class="step-col"><div class="step-circle active" id="sc1">1</div><div class="step-label active" id="sl1">Witness Input</div></div>
+      <div class="step-connector" id="conn1"></div>
+      <div class="step-col"><div class="step-circle" id="sc2">2</div><div class="step-label" id="sl2">Attributes</div></div>
+      <div class="step-connector" id="conn2"></div>
+      <div class="step-col"><div class="step-circle" id="sc3">3</div><div class="step-label" id="sl3">Generate Face</div></div>
+      <div class="step-connector" id="conn3"></div>
+      <div class="step-col"><div class="step-circle" id="sc4">4</div><div class="step-label" id="sl4">Match Results</div></div>
+    </div>
+
+    <!-- STEP 1: Voice / Text Input -->
+    <div class="panel active" id="panel1">
+      <div class="panel-header">
+        <div class="panel-icon"><i class="fa-solid fa-microphone"></i></div>
+        <div><div class="panel-title">Witness Description</div><div class="panel-subtitle">Record audio or type the suspect description from the witness</div></div>
+      </div>
+      <div class="voice-section">
+        <div class="voice-recorder-box">
+          <button class="record-btn" id="recordBtn" onclick="toggleRecording()">
+            <i class="fa-solid fa-microphone" id="micIcon"></i>
+          </button>
+          <div class="record-status" id="recordStatus">Click to start recording</div>
+          <div style="font-size:12px;color:#aaa;margin-top:8px;" id="recordTimer"></div>
+        </div>
+        <div class="text-input-box">
+          <div style="font-size:13px;font-weight:600;color:#555;margin-bottom:8px;">Or type description directly:</div>
+          <textarea id="descriptionText" placeholder="e.g. The suspect was a male in his 30s with dark brown skin, short black hair, thick eyebrows, and a vertical scar on his left cheek. He had a small mole near his right eye..."></textarea>
+        </div>
+      </div>
+      <div class="transcript-box" id="transcriptBox"></div>
+      <div class="error-box" id="step1Error"></div>
+      <br>
+      <button class="action-btn" onclick="runStep2()"><i class="fa-solid fa-arrow-right"></i> Analyse Description</button>
+    </div>
+
+    <!-- STEP 2: Parsed Attributes -->
+    <div class="panel" id="panel2">
+      <div class="panel-header">
+        <div class="panel-icon"><i class="fa-solid fa-brain"></i></div>
+        <div><div class="panel-title">Extracted Facial Attributes</div><div class="panel-subtitle">AI-parsed attributes from the witness description</div></div>
+      </div>
+      <div id="attrDisplay"></div>
+      <div class="error-box" id="step2Error"></div>
+      <button class="action-btn" onclick="showPanel(3)"><i class="fa-solid fa-arrow-right"></i> Generate Face</button>
+      <button class="action-btn-outline" onclick="showPanel(1)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+    </div>
+
+    <!-- STEP 3: Face Generation -->
+    <div class="panel" id="panel3">
+      <div class="panel-header">
+        <div class="panel-icon"><i class="fa-solid fa-face-smile"></i></div>
+        <div><div class="panel-title">Forensic Face Generation</div><div class="panel-subtitle">Upload a sketch for controlled reconstruction, or generate from description only</div></div>
+      </div>
+
+      <div class="sketch-upload-zone" onclick="document.getElementById('sketchInput').click()">
+        <i class="fa-solid fa-pencil"></i>
+        <p style="font-size:14px;color:#888;"><strong>Optional:</strong> Upload forensic sketch for ControlNet reconstruction</p>
+        <p style="font-size:12px;color:#aaa;margin-top:4px;">If provided, generated faces will follow the sketch's face geometry exactly</p>
+        <img id="sketchPreview" class="sketch-preview-img">
+      </div>
+      <input type="file" id="sketchInput" accept=".jpg,.jpeg,.png" style="display:none" onchange="previewSketch(this)">
+
+      <div class="generate-options">
+        <span class="num-label">Generate</span>
+        <select class="num-select" id="numImages">
+          <option value="4" selected>4 variations</option>
+          <option value="2">2 variations</option>
+          <option value="1">1 image</option>
+        </select>
+        <button class="gen-btn" id="genBtn" onclick="runGenerate()">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Forensic Faces
+        </button>
+      </div>
+
+      <div id="genLoader" class="loader-wrap" style="display:none;">
+        <div class="loader"></div>
+        <div class="loader-text" id="genLoaderText">Generating forensic faces — this may take 30-60 seconds...</div>
+        <div style="font-size:12px;color:#aaa;margin-top:6px;">SD 1.5 Realistic Vision + GFPGAN enhancement</div>
+      </div>
+
+      <div class="faces-grid" id="facesGrid"></div>
+      <div class="error-box" id="step3Error"></div>
+
+      <div id="step3Actions" style="display:none;">
+        <button class="action-btn" id="matchBtn" onclick="runMatch()" disabled>
+          <i class="fa-solid fa-magnifying-glass"></i> Match Selected Face
+        </button>
+        <button class="action-btn-outline" onclick="showPanel(2)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+      </div>
+    </div>
+
+    <!-- STEP 4: Match Results -->
+    <div class="panel" id="panel4">
+      <div class="panel-header">
+        <div class="panel-icon"><i class="fa-solid fa-shield-halved"></i></div>
+        <div><div class="panel-title">Match Results</div><div class="panel-subtitle">Criminal database matches ordered by similarity score</div></div>
+      </div>
+      <div id="matchLoader" class="loader-wrap" style="display:none;">
+        <div class="loader"></div>
+        <div class="loader-text">Searching criminal database...</div>
+      </div>
+      <div id="matchResults"></div>
+      <div class="error-box" id="step4Error"></div>
+      <div id="step4Actions" style="display:none;">
+        <button class="action-btn" onclick="saveCase()"><i class="fa-solid fa-floppy-disk"></i> Save to Case</button>
+        <button class="action-btn-outline" onclick="showPanel(3)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+      </div>
+      <div id="savedMsg" style="display:none;background:#f0fff4;border:1px solid #b7eb8f;border-radius:10px;padding:14px;margin-top:16px;font-size:14px;color:#135200;"></div>
+    </div>
+
+  </div>
+</div>
+<div class="footer">Forensic AI Investigation System — For Law Enforcement Use Only</div>
+
+<script>
+var state = {
+  step: 1,
+  transcript: '',
+  descriptionText: '',
+  attributes: null,
+  positivePrompt: '',
+  negativePrompt: '',
+  generatedImages: [],
+  selectedImage: null,
+  matchResults: [],
+  sketchFile: null,
+  audioPath: null,
+  sttLanguage: null,
+  sttConfidence: null,
+};
+
+// Recording state
+var mediaRecorder = null;
+var audioChunks = [];
+var isRecording = false;
+var recordInterval = null;
+var recordSeconds = 0;
+
+function toggleRecording() {
+  if (isRecording) stopRecording();
+  else startRecording();
+}
+
+function startRecording() {
+  navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream) {
+    mediaRecorder = new MediaRecorder(stream);
+    audioChunks = [];
+    mediaRecorder.ondataavailable = function(e) { audioChunks.push(e.data); };
+    mediaRecorder.onstop = function() {
+      var blob = new Blob(audioChunks, {type:'audio/webm'});
+      transcribeAudio(blob);
+    };
+    mediaRecorder.start();
+    isRecording = true;
+    recordSeconds = 0;
+    document.getElementById('recordBtn').classList.add('recording');
+    document.getElementById('micIcon').className = 'fa-solid fa-stop';
+    document.getElementById('recordStatus').textContent = 'Recording... click to stop';
+    recordInterval = setInterval(function() {
+      recordSeconds++;
+      var m = Math.floor(recordSeconds/60);
+      var s = recordSeconds%60;
+      document.getElementById('recordTimer').textContent = m+':'+(s<10?'0':'')+s;
+    }, 1000);
+  }).catch(function(err) {
+    showError('step1Error', 'Microphone access denied. Please type the description instead.');
+  });
+}
+
+function stopRecording() {
+  if (mediaRecorder) { mediaRecorder.stop(); mediaRecorder.stream.getTracks().forEach(t=>t.stop()); }
+  isRecording = false;
+  clearInterval(recordInterval);
+  document.getElementById('recordBtn').classList.remove('recording');
+  document.getElementById('micIcon').className = 'fa-solid fa-microphone';
+  document.getElementById('recordStatus').textContent = 'Processing audio...';
+}
+
+function transcribeAudio(blob) {
+  var formData = new FormData();
+  formData.append('audio', blob, 'recording.webm');
+  fetch('/api/transcribe', {method:'POST', body:formData})
+    .then(r=>r.json()).then(function(d) {
+      if (d.error) { showError('step1Error', d.error); document.getElementById('recordStatus').textContent='Click to start recording'; return; }
+      state.transcript = d.transcript;
+      state.audioPath = d.audio_path;
+      state.sttLanguage = d.language;
+      state.sttConfidence = d.confidence;
+      document.getElementById('descriptionText').value = d.transcript;
+      var tb = document.getElementById('transcriptBox');
+      tb.textContent = '🎙️ Transcribed: "' + d.transcript + '"';
+      tb.style.display = 'block';
+      document.getElementById('recordStatus').textContent = 'Recording complete';
+      document.getElementById('recordTimer').textContent = '';
+    }).catch(function(e){ showError('step1Error', 'Transcription failed: '+e); });
+}
+
+function runStep2() {
+  var text = document.getElementById('descriptionText').value.trim();
+  if (!text) { showError('step1Error', 'Please record audio or type a description first.'); return; }
+  state.descriptionText = text;
+  hideError('step1Error');
+  document.getElementById('attrDisplay').innerHTML = '<div class="loader-wrap"><div class="loader"></div><div class="loader-text">Extracting facial attributes...</div></div>';
+  showPanel(2);
+
+  fetch('/api/parse', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({text:text})
+  }).then(r=>r.json()).then(function(d) {
+    if (d.error) { showError('step2Error', d.error); return; }
+    state.attributes = d.attributes;
+    state.positivePrompt = d.positive_prompt;
+    state.negativePrompt = d.negative_prompt;
+    renderAttributes(d.attributes, d.display, d.positive_prompt);
+  }).catch(function(e){ showError('step2Error', 'Parse failed: '+e); });
+}
+
+function renderAttributes(attrs, display, prompt) {
+  var skip = ['marks', 'raw_text'];
+  var html = '<div class="attr-grid">';
+  for (var k in attrs) {
+    if (skip.includes(k) || !attrs[k]) continue;
+    html += '<div class="attr-item"><div class="attr-label">'+k.replace('_',' ')+'</div><div class="attr-value">'+attrs[k]+'</div></div>';
+  }
+  html += '</div>';
+  if (attrs.marks && attrs.marks.length > 0) {
+    html += '<div class="marks-list"><strong style="font-size:13px;color:#b30000;">🔴 Distinguishing Marks:</strong><br>';
+    attrs.marks.forEach(function(m) {
+      html += '<span class="mark-tag">'+m.type+' — '+m.location+'</span>';
+    });
+    html += '</div>';
+  }
+  if (prompt) {
+    html += '<div class="prompt-box"><div class="prompt-label">AI Prompt for Face Generation:</div>'+prompt+'</div>';
+  }
+  document.getElementById('attrDisplay').innerHTML = html;
+}
+
+function previewSketch(input) {
+  if (input.files && input.files[0]) {
+    state.sketchFile = input.files[0];
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var p = document.getElementById('sketchPreview');
+      p.src = e.target.result;
+      p.style.display = 'block';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+var FACE_LABELS = ['Candidate 1','Candidate 2','Candidate 3','Candidate 4'];
+var FACE_ICONS  = ['1️⃣','2️⃣','3️⃣','4️⃣'];
+
+function runGenerate() {
+  if (!state.positivePrompt) { showError('step3Error', 'Please complete Step 2 first.'); return; }
+  hideError('step3Error');
+  document.getElementById('genBtn').disabled = true;
+  document.getElementById('genLoader').style.display = 'block';
+  document.getElementById('facesGrid').innerHTML = '';
+  document.getElementById('step3Actions').style.display = 'none';
+  state.generatedImages = [];
+
+  var total = parseInt(document.getElementById('numImages').value, 10) || 4;
+
+  // Pre-render placeholder cards so users see progress
+  renderPlaceholderCards(total);
+  updateProgressText(0, total);
+
+  var formData = new FormData();
+  formData.append('positive_prompt', state.positivePrompt);
+  formData.append('negative_prompt', state.negativePrompt);
+  formData.append('num_images', total);
+  if (state.sketchFile) formData.append('sketch', state.sketchFile);
+  // Stage 2 post-processing: scars, moles and other distinguishing
+  // marks are rendered onto the generated face via OpenCV using
+  // anatomical landmarks — they are NOT in the AI prompt (which
+  // would produce generic marks in random places). Hand the parsed
+  // marks to the backend so face_enhancer.add_marks_to_face runs.
+  var marksPayload = (state.attributes && state.attributes.marks) || [];
+  formData.append('marks_json', JSON.stringify(marksPayload));
+
+  fetch('/api/generate', {method:'POST', body:formData})
+    .then(r=>r.json()).then(function(d) {
+      if (d.error) {
+        document.getElementById('genBtn').disabled = false;
+        document.getElementById('genLoader').style.display = 'none';
+        showError('step3Error', d.error);
+        return;
+      }
+      pollGenerationStatus(total);
+    }).catch(function(e) {
+      document.getElementById('genBtn').disabled = false;
+      document.getElementById('genLoader').style.display = 'none';
+      showError('step3Error', 'Generation failed: '+e);
+    });
+}
+
+function pollGenerationStatus(total) {
+  var poll = function() {
+    fetch('/api/generate-status').then(r=>r.json()).then(function(s) {
+      if (s.error) {
+        document.getElementById('genBtn').disabled = false;
+        document.getElementById('genLoader').style.display = 'none';
+        showError('step3Error', s.error);
+        return;
+      }
+
+      // Render any images that have finished
+      state.generatedImages = s.images || [];
+      updatePlaceholderCards(s.images || [], total);
+      updateProgressText(s.count || 0, s.total || total);
+
+      if (s.done) {
+        document.getElementById('genBtn').disabled = false;
+        document.getElementById('genLoader').style.display = 'none';
+        document.getElementById('step3Actions').style.display = 'block';
+        return;
+      }
+      setTimeout(poll, 2000);
+    }).catch(function(e) {
+      // Retry on transient errors
+      setTimeout(poll, 3000);
+    });
+  };
+  poll();
+}
+
+function updateProgressText(done, total) {
+  var el = document.getElementById('genLoaderText');
+  if (!el) return;
+  if (done >= total) {
+    el.textContent = 'Finalizing ' + total + ' forensic variations...';
+  } else {
+    el.textContent = 'Generating variation ' + (done + 1) + ' of ' + total
+      + '  (' + done + ' ready, ' + (total - done) + ' remaining)';
+  }
+}
+
+function renderPlaceholderCards(total) {
+  var grid = document.getElementById('facesGrid');
+  grid.innerHTML = '';
+  for (var i = 0; i < total; i++) {
+    var label = FACE_LABELS[i] || ('Face ' + (i + 1));
+    var icon  = FACE_ICONS[i]  || '🧑';
+    var card = document.createElement('div');
+    card.className = 'face-card pending';
+    card.id = 'face_' + i;
+    card.innerHTML =
+      '<div class="face-placeholder" id="faceph_'+i+'">' +
+        '<i class="fa-solid fa-spinner fa-spin" style="font-size:28px;color:#b30000;"></i>' +
+        '<div style="margin-top:8px;font-size:12px;color:#888;">Generating…</div>' +
+      '</div>' +
+      '<div class="sel-badge"><i class="fa-solid fa-check"></i></div>' +
+      '<div class="face-num">' + icon + ' ' + label + '</div>';
+    grid.appendChild(card);
+  }
+}
+
+function updatePlaceholderCards(images, total) {
+  for (var i = 0; i < total; i++) {
+    var card = document.getElementById('face_' + i);
+    if (!card || !images[i]) continue;
+    var url   = images[i];
+    var fname = url.split('/').pop().split('?')[0];
+    var label = FACE_LABELS[i] || ('Face ' + (i + 1));
+    var icon  = FACE_ICONS[i]  || '🧑';
+
+    if (card.classList.contains('pending')) {
+      // First time this slot has an image — swap placeholder → card.
+      card.classList.remove('pending');
+      card.onclick = (function(idx, fn) { return function() { selectFace(idx, fn); }; })(i, fname);
+      card.innerHTML =
+        '<img src="' + url + '" alt="' + label + '">' +
+        '<div class="sel-badge"><i class="fa-solid fa-check"></i></div>' +
+        '<div class="face-num">' + icon + ' ' + label + '</div>';
+      continue;
+    }
+
+    // Slot already rendered — re-swap the <img src> if the URL changed
+    // (the server bumps the ?t= query string when a file is rewritten,
+    // e.g. Stage 3 converting slot N from photo to pencil sketch).
+    var imgEl = card.querySelector('img');
+    if (imgEl && imgEl.getAttribute('src') !== url) {
+      imgEl.setAttribute('src', url);
+    }
+  }
+}
+
+function renderFaces(images) {
+  // Kept for backward compat — now delegates to placeholder+update flow
+  renderPlaceholderCards(images.length);
+  updatePlaceholderCards(images, images.length);
+}
+
+function selectFace(idx, filename) {
+  document.querySelectorAll('.face-card').forEach(function(c){ c.classList.remove('selected'); });
+  document.getElementById('face_'+idx).classList.add('selected');
+  state.selectedImage = filename;
+  document.getElementById('matchBtn').disabled = false;
+}
+
+function runMatch() {
+  if (!state.selectedImage) { showError('step3Error', 'Please select a generated face first.'); return; }
+  showPanel(4);
+  document.getElementById('matchLoader').style.display = 'block';
+  document.getElementById('matchResults').innerHTML = '';
+  document.getElementById('step4Actions').style.display = 'none';
+  hideError('step4Error');
+
+  fetch('/api/match', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({image_filename: state.selectedImage, attributes: state.attributes})
+  }).then(r=>r.json()).then(function(d) {
+    document.getElementById('matchLoader').style.display = 'none';
+    if (d.error) { showError('step4Error', d.error); return; }
+    state.matchResults = d.matches;
+    renderMatches(d.matches);
+    document.getElementById('step4Actions').style.display = 'block';
+  }).catch(function(e) {
+    document.getElementById('matchLoader').style.display = 'none';
+    showError('step4Error', 'Matching failed: '+e);
+  });
+}
+
+function renderMatches(matches) {
+  var el = document.getElementById('matchResults');
+  if (!matches || matches.length === 0) {
+    el.innerHTML = '<div class="no-match-box"><i class="fa-solid fa-user-slash"></i><p style="font-size:16px;font-weight:600;margin-bottom:8px;">No Match Found</p><p style="color:#888;font-size:14px;">The generated face does not match any records in the criminal database with sufficient confidence.</p></div>';
+    return;
+  }
+
+  // Sketch card: the officer's selected generated image (may be the
+  // pencil-sketch variant, or a photo — in either case it is the query).
+  var sketchUrl = '';
+  if (state.selectedImage) {
+    sketchUrl = '/data/generated/' + state.selectedImage;
+  } else if (state.generatedImages && state.generatedImages.length) {
+    sketchUrl = state.generatedImages[state.generatedImages.length - 1];
+  }
+
+  var board = '<div class="match-board">';
+  board += '<div class="sketch-card">' +
+    '<div class="sk-label"><i class="fa-solid fa-pen-nib"></i> Sketch</div>' +
+    (sketchUrl ? '<img src="'+sketchUrl+'" alt="Sketch">' :
+      '<div style="width:100%;aspect-ratio:1;background:#f4f4f4;border-radius:10px;"></div>') +
+  '</div>';
+
+  matches.slice(0,5).forEach(function(m, i) {
+    var score = (m.final_score || 0).toFixed(2) + '%';
+    var rec = m.db_record || {};
+    var photo = rec.face_url
+      ? '<img src="'+rec.face_url+'" alt="Match photo">'
+      : '<img src="" alt="Match photo" style="background:#eee;">';
+    var name = rec.name || m.name || 'Unknown';
+    var meta = '';
+    if (rec.age) meta += '<div><strong>Age:</strong> '+rec.age+'</div>';
+    if (rec.crime_type) meta += '<div><strong>Crime:</strong> '+rec.crime_type+'</div>';
+    board +=
+      '<div class="match-card" data-idx="'+i+'" onclick="selectMatch('+i+')">' +
+        '<div class="match-rank">'+(i+1)+'</div>' +
+        '<div class="match-title">#'+(i+1)+'</div>' +
+        '<div class="match-score-pill">'+score+'</div>' +
+        photo +
+        '<div class="match-meta"><div class="mm-name">'+name+'</div>'+meta+'</div>' +
+      '</div>';
+  });
+  board += '</div>';
+
+  // Detail panel (right side) — populated on click, seeded with the top match
+  board += '<div class="detail-panel" id="detailPanel"><div class="detail-empty">'
+         + 'Click a match to see full record</div></div>';
+
+  el.innerHTML = '<div class="match-layout">' + board + '</div>';
+
+  // Auto-select the top match
+  if (matches.length) selectMatch(0);
+}
+
+function selectMatch(idx) {
+  var m = state.matchResults[idx];
+  if (!m) return;
+  document.querySelectorAll('.match-card').forEach(function(c){
+    c.classList.toggle('selected', String(c.dataset.idx) === String(idx));
+  });
+  var rec = m.db_record || {};
+  var rows = [];
+  var add = function(label, val) {
+    if (val === null || val === undefined || val === '') return;
+    rows.push('<div class="dp-row"><div class="dp-label">'+label+'</div>' +
+              '<div class="dp-value">'+val+'</div></div>');
+  };
+  add('Name', rec.name || m.name);
+  add('Criminal Code', rec.criminal_code);
+  add('Age', rec.age ? rec.age + ' years' : null);
+  add('Crime', rec.crime_type);
+  add('Year', rec.crime_year);
+  add('Total Crimes', rec.no_of_crimes);
+  add('Last Known Location', rec.last_known_location);
+  add('Status', rec.status ? rec.status.toUpperCase() : null);
+  add('Match', (m.final_score || 0).toFixed(2) + '%');
+  add('Description', rec.description);
+
+  document.getElementById('detailPanel').innerHTML =
+    '<h3><i class="fa-solid fa-id-card"></i> Suspect Record</h3>' +
+    (rows.length ? rows.join('') :
+     '<div class="detail-empty">No database record for this match.</div>');
+}
+
+function saveCase() {
+  var topMatch = state.matchResults && state.matchResults.length > 0 ? state.matchResults[0] : null;
+  var payload = {
+    incident_location: '',
+    transcript: state.transcript || state.descriptionText,
+    description_text: state.descriptionText,
+    audio_path: state.audioPath,
+    stt_language: state.sttLanguage,
+    stt_confidence: state.sttConfidence,
+    attributes: state.attributes,
+    positive_prompt: state.positivePrompt,
+    negative_prompt: state.negativePrompt,
+    generated_images: state.generatedImages,
+    generation_mode: state.sketchFile ? 'sketch+controlnet' : 'text',
+    had_sketch: !!state.sketchFile,
+    selected_image: state.selectedImage,
+    match_results: state.matchResults,
+    top_match_name: topMatch && topMatch.db_record ? topMatch.db_record.name : (topMatch ? topMatch.name : null),
+    top_match_score: topMatch ? topMatch.final_score : null,
+  };
+  fetch('/api/save-run', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(payload)
+  }).then(r=>r.json()).then(function(d) {
+    if (d.status === 'ok') {
+      var msg = document.getElementById('savedMsg');
+      msg.innerHTML = '✅ Case saved successfully! Case number: <strong>'+d.case_number+'</strong>';
+      msg.style.display = 'block';
+    }
+  }).catch(function(e){ showError('step4Error', 'Save failed: '+e); });
+}
+
+function showPanel(n) {
+  state.step = n;
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
+  document.getElementById('panel'+n).classList.add('active');
+  for (var i=1; i<=4; i++) {
+    var sc = document.getElementById('sc'+i);
+    var sl = document.getElementById('sl'+i);
+    if (i < n) { sc.className='step-circle done'; sl.className='step-label done'; }
+    else if (i === n) { sc.className='step-circle active'; sl.className='step-label active'; }
+    else { sc.className='step-circle'; sl.className='step-label'; }
+    if (i < 4) {
+      var conn = document.getElementById('conn'+i);
+      conn.className = 'step-connector'+(i < n ? ' done' : '');
+    }
+  }
+}
+
+function showError(id, msg) {
+  var el = document.getElementById(id);
+  el.textContent = '⚠️ '+msg;
+  el.style.display = 'block';
+}
+function hideError(id) {
+  document.getElementById(id).style.display = 'none';
+}
+</script>
+</body>
+</html>
